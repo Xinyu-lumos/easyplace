@@ -20,11 +20,16 @@ class Params:
         """
         @brief initialization
         """
+        # os.path.join 是 Python 中 os.path 模块提供的一个函数，用于 智能拼接文件路径
         filename = os.path.join(os.path.dirname(__file__), 'params.json')
+        print (filename)
         self.__dict__ = {}
         params_dict = {}
+        # json.load() 函数用于将文件中的 JSON 格式数据解析为 Python 对象
+        # object_pairs_hook=OrderedDict 指定使用 有序字典（OrderedDict）存储 JSON 数据中的键值对。
         with open(filename, "r") as f:
             params_dict = json.load(f, object_pairs_hook=OrderedDict)
+
         for key, value in params_dict.items():
             if 'default' in value: 
                 self.__dict__[key] = value['default']
@@ -36,75 +41,13 @@ class Params:
         """
         @brief print welcome message
         """
-        content = """\
-========================================================
-                       DREAMPlace
-            Yibo Lin (http://yibolin.com)
-   David Z. Pan (http://users.ece.utexas.edu/~dpan)
-========================================================"""
+        content = "Hello, welcome to easyPlace!"
         print(content)
 
     def printHelp(self):
-        """
-        @brief print help message for JSON parameters
-        """
-        content = self.toMarkdownTable()
+        content = "Hello, welcome to easyPlace!"
         print(content)
 
-    def toMarkdownTable(self):
-        """
-        @brief convert to markdown table 
-        """
-        key_length = len('JSON Parameter')
-        key_length_map = []
-        default_length = len('Default')
-        default_length_map = []
-        description_length = len('Description')
-        description_length_map = []
-
-        def getDefaultColumn(key, value):
-            if sys.version_info.major < 3: # python 2
-                flag = isinstance(value['default'], unicode)
-            else: #python 3
-                flag = isinstance(value['default'], str)
-            if flag and not value['default'] and 'required' in value: 
-                return value['required']
-            else:
-                return value['default']
-
-        for key, value in self.params_dict.items():
-            key_length_map.append(len(key))
-            default_length_map.append(len(str(getDefaultColumn(key, value))))
-            description_length_map.append(len(value['description']))
-            key_length = max(key_length, key_length_map[-1])
-            default_length = max(default_length, default_length_map[-1])
-            description_length = max(description_length, description_length_map[-1])
-
-        content = "| %s %s| %s %s| %s %s|\n" % (
-                'JSON Parameter', 
-                " " * (key_length - len('JSON Parameter') + 1), 
-                'Default', 
-                " " * (default_length - len('Default') + 1), 
-                'Description', 
-                " " * (description_length - len('Description') + 1)
-                )
-        content += "| %s | %s | %s |\n" % (
-                "-" * (key_length + 1), 
-                "-" * (default_length + 1), 
-                "-" * (description_length + 1)
-                )
-        count = 0
-        for key, value in self.params_dict.items():
-            content += "| %s %s| %s %s| %s %s|\n" % (
-                    key, 
-                    " " * (key_length - key_length_map[count] + 1), 
-                    str(getDefaultColumn(key, value)), 
-                    " " * (default_length - default_length_map[count] + 1), 
-                    value['description'], 
-                    " " * (description_length - description_length_map[count] + 1)
-                    )
-            count += 1
-        return content 
 
     def toJson(self):
         """

@@ -33,6 +33,8 @@ def place(params):
     assert (not params.gpu) or configure.compile_configurations["CUDA_FOUND"] == 'TRUE', \
             "CANNOT enable GPU without CUDA compiled"
 
+    logging.info("random seed %d" % (params.random_seed))
+    
     np.random.seed(params.random_seed)
     # read database
     tt = time.time()
@@ -169,13 +171,34 @@ if __name__ == "__main__":
     """
     #logging
     logging.root.name = 'DREAMPlace'
-    logging.basicConfig(level=logging.INFO,
-                        format='[%(levelname)-7s] %(name)s - %(message)s',
-                        stream=sys.stdout)
+
+    # (levelname)-7s：日志级别（占用至少 7 个字符宽）。
+    # %(name)s：记录器名称（这里会是 DREAMPlace）。
+    # %(message)s：日志消息内容
+
+    # logging.basicConfig(level=logging.INFO,
+    #                     format='[%(levelname)-7s] %(name)s - %(message)s',
+    #                     stream=sys.stdout)
+
+    log_file = '/home/yu/Placement/DREAMPlace/install/logs/app.log'
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
+    logging.basicConfig(
+    level=logging.INFO,
+    format='[%(levelname)-7s] %(funcName)s - Line %(lineno)d - %(message)s',
+    filename=log_file,  # 指定日志文件路径
+    filemode='w'  # 追加模式（默认），如需覆盖日志，可改为 'w'
+)
+
     params = Params.Params()
+    # pdb.set_trace()
     # for testing
     params.printWelcome()
+    # sys.argv[0] 是脚本的名称。
+    # sys.argv[1] 开始是命令行的附加参数。
+    # sys.argv 是一个列表，包含了 命令行运行脚本时传入的参数。
     if len(sys.argv) == 1 or '-h' in sys.argv[1:] or '--help' in sys.argv[1:]:
+       # pdb.set_trace()
         params.printHelp()
         exit()
     elif len(sys.argv) != 2:
@@ -191,5 +214,6 @@ if __name__ == "__main__":
 
     # run placement
     tt = time.time()
+    # print("params",params)
     place(params)
     logging.info("placement takes %.3f seconds" % (time.time() - tt))

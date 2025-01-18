@@ -29,10 +29,8 @@ class PlaceDB (object):
     @brief placement database
     """
     def __init__(self):
-        """
-        initialization
-        To avoid the usage of list, I flatten everything.
-        """
+       
+        logging.info("PlaceDB init")
         self.rawdb = None # raw placement database, a C++ object
         self.pydb = None # python placement database interface
 
@@ -70,25 +68,25 @@ class PlaceDB (object):
         self.pin2net_map = None # 1D array, contain parent net id of each pin
 
         self.rows = None # NumRows x 4 array, stores xl, yl, xh, yh of each row
-
+        # placement regions
         self.regions = None # array of 1D array, placement regions like FENCE and GUIDE
         self.flat_region_boxes = None # flat version of regions
         self.flat_region_boxes_start = None # start indices of regions, length of num regions + 1
         self.node2fence_region_map = None # map cell to a region, maximum integer if no fence region
-
+        # placement regions
         self.xl = None
         self.yl = None
         self.xh = None
         self.yh = None
-
+        # placement density
         self.row_height = None
         self.site_width = None
-
+        # bin grid
         self.bin_size_x = None
         self.bin_size_y = None
         self.num_bins_x = None
         self.num_bins_y = None
-
+        # number of movable pins
         self.num_movable_pins = None
 
         self.total_movable_node_area = None # total movable cell area
@@ -111,10 +109,13 @@ class PlaceDB (object):
         self.num_routing_grids_x = None
         self.num_routing_grids_y = None
         self.num_routing_layers = None
+        
         self.unit_horizontal_capacity = None # per unit distance, projected to one layer
         self.unit_vertical_capacity = None # per unit distance, projected to one layer
+
         self.unit_horizontal_capacities = None # per unit distance, layer by layer
         self.unit_vertical_capacities = None # per unit distance, layer by layer
+
         self.initial_horizontal_demand_map = None # routing demand map from fixed cells, indexed by (grid x, grid y), projected to one layer
         self.initial_vertical_demand_map = None # routing demand map from fixed cells, indexed by (grid x, grid y), projected to one layer
 
@@ -156,6 +157,7 @@ class PlaceDB (object):
         """
         logging.info("shift coordinate system by (%g, %g), scale coordinate system by %g" 
                 % (shift_factor[0], shift_factor[1], scale_factor))
+        
         self.scale_pl(shift_factor, scale_factor)
         self.node_size_x *= scale_factor
         self.node_size_y *= scale_factor
@@ -487,14 +489,7 @@ class PlaceDB (object):
 
     #    return flat_net2pin_map, flat_net2pin_start_map
 
-    def read(self, params):
-        """
-        @brief read using c++
-        @param params parameters
-        """
-        self.dtype = datatypes[params.dtype]
-        self.rawdb = place_io.PlaceIOFunction.read(params)
-        self.initialize_from_rawdb(params)
+   
 
     def initialize_from_rawdb(self, params):
         """
@@ -653,11 +648,21 @@ class PlaceDB (object):
             self.num_bins_x = params.num_bins_x
             self.num_bins_y = params.num_bins_y
 
+    def read(self, params):
+        """
+        @brief read using c++
+        @param params parameters
+        """
+        self.dtype = datatypes[params.dtype]
+        self.rawdb = place_io.PlaceIOFunction.read(params)
+        self.initialize_from_rawdb(params)
+
     def __call__(self, params):
         """
         @brief top API to read placement files
         @param params parameters
         """
+        logging.info("read placement files")
         tt = time.time()
 
         self.read(params)
